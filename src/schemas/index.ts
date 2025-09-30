@@ -7,20 +7,14 @@ export const CreateMeetingSchema = z.object({
         .min(2, { message: "Please enter the meeting title" })
         .max(100, { message: "Meeting title should not exceed 100 characters" }),
 
-    password: z
-        .string()
-        .trim()
-        .optional(),
+    password: z.string().trim().optional(),
 
-    date: z
-        .string()
-        .min(1, { message: "Please select a date" }),
+    date: z.string().min(1, { message: "Please select a date" }),
 
-    time: z
-        .string()
-        .min(1, { message: "Please select a time" }),
+    time: z.string().min(1, { message: "Please select a time" }),
 
-    enableChat: z.boolean().default(true),
-
-    recordMeeting: z.boolean().default(false),
+    enableChat: z.boolean().optional().default(true),
+    recordMeeting: z.boolean().optional().default(false),
 });
+
+export type CreateMeetingSchemaType = z.infer<typeof CreateMeetingSchema>;
