@@ -14,7 +14,7 @@ jobs:
             - name: Checkout respository
               uses: actions/setup-node@v4
               with:
-                node-version: 10.8.1
+                node-version: 20.16.0
             
             - name: Install dependencies
               run: npm install
