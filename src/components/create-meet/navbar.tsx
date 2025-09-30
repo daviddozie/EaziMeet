@@ -4,7 +4,8 @@ import Link from "next/link";
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { X, MenuIcon } from "lucide-react";
-import { Logo } from "./svg";
+import { Logo } from "../svg";
+import { Settings } from "lucide-react";
 
 export const Navbar = () => {
     const [isOpen, setIsOpen] = useState(false);
@@ -51,18 +52,18 @@ export const Navbar = () => {
                 <div className="hidden md:flex items-center space-x-4 font-poppins">
                     <motion.div whileTap={{ scale: 0.95 }}>
                         <Link
-                            href="/create-meet"
+                            href="/create"
                             className="bg-orange-500 hover:bg-orange-600 text-white px-4 py-2 rounded-md text-sm font-medium transition"
                         >
-                            Create a Meeting
+                            New Meeting
                         </Link>
                     </motion.div>
                     <motion.div whileTap={{ scale: 0.95 }}>
                         <Link
-                            href="/login"
-                            className="bg-[#1E3A8A] hover:bg-[#18327a]  text-white px-4 py-2 rounded-md text-sm font-medium transition"
+                            href="/settings"
+                            className="bg-[#1E3A8A] hover:bg-[#18327a] flex justify-center items-center text-white px-2 py-2 rounded-full text-sm font-medium transition"
                         >
-                            Login
+                            <Settings size={20} />
                         </Link>
                     </motion.div>
                 </div>
@@ -121,21 +122,20 @@ export const Navbar = () => {
 
                             <motion.div whileTap={{ scale: 0.95 }}>
                                 <Link
-                                    href="/create-meet"
+                                    href="/new-meeting"
                                     className="bg-orange-500 hover:bg-orange-600 text-white px-4 py-2 rounded-md text-sm font-medium transition font-poppins"
                                     onClick={() => setIsOpen(false)}
                                 >
-                                    Create a Meeting
+                                    New Meeting
                                 </Link>
                             </motion.div>
 
                             <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
                                 <Link
-                                    href="/login"
-                                     className="bg-[#1E3A8A] hover:bg-[#18327a]  text-white px-4 py-2 rounded-md text-sm font-medium transition font-poppins"
-                                    onClick={() => setIsOpen(false)}
+                                    href="/settings"
+                                    className="bg-[#1E3A8A] hover:bg-[#18327a] flex justify-center items-center text-white px-2 py-2 rounded-full text-sm font-medium transition"
                                 >
-                                    Login
+                                    <Settings size={20} />
                                 </Link>
                             </motion.div>
                         </motion.div>
