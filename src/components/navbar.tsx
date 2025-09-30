@@ -10,6 +10,7 @@ export const Navbar = () => {
     const [isOpen, setIsOpen] = useState(false);
 
     const navLinks = [
+        { name: "Home", href: "/" },
         { name: "Features", href: "/features" },
         { name: "Pricing", href: "/pricing" },
         { name: "Support", href: "/support" },

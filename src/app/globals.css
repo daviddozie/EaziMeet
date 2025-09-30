@@ -7,6 +7,19 @@
   font-family: "Poppins", sans-serif;
 }
 
+/* Change inactive dot color */
+.slick-dots li button:before {
+  color: #6B7280 !important; /* gray-500 */
+  font-size: 12px; /* smaller dots */
+}
+
+/* Change active dot color */
+.slick-dots li.slick-active button:before {
+  color: #FB923C !important; /* yellow-400 */
+  font-size: 10px; /* slightly bigger */
+}
+
+
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
