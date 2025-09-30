@@ -14,7 +14,7 @@ export const Hero = () => {
                 <p className="text-[#D1D5DB] text-center md:text-start font-poppins mt-4 mb-6 leading-[28px]">EaziMeet offers a streamlined platform for spontaneous meetings and collaborative sessions. Start or join a meeting with a single click, no downloads or sign-ups required.</p>
                 <div className="flex justify-center md:justify-start">
                     <Button
-                        onClick={() => router.push("/create")}
+                        onClick={() => router.push("/create-meet")}
                         className="bg-orange-500 w-full md:w-[180px] hover:bg-orange-600 font-poppins text-white px-4 py-2 rounded-md text-sm font-medium transition"
                     >
                         Create a Meeting
