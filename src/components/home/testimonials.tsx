@@ -6,7 +6,6 @@ import { useRef } from "react";
 import "slick-carousel/slick/slick.css";
 import "slick-carousel/slick/slick-theme.css";
 import Image from "next/image";
-import { getOriginIndex } from "framer-motion";
 
 export const Testimonials = () => {
     const sliderRef = useRef<Slider | null>(null);
