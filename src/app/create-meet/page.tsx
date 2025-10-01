@@ -267,7 +267,8 @@ const CreateMeet = () => {
                     </CardContent>
 
                 </Card>
-            </div></>
+            </div>
+        </>
     );
 }
 
