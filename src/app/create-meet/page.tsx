@@ -131,7 +131,7 @@ const CreateMeet = () => {
 
             toast.success("Meeting created successfully!");
             router.push("join-meet");
-        } catch (_err) {
+        } catch {
             toast.error("Something went wrong. Please try again.");
         }
     };

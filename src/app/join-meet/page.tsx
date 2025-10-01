@@ -51,7 +51,7 @@ const JoinMeet = () => {
 
             toast.success("You now have access to the meeting!");
             router.push("/room");
-        } catch (_err) {
+        } catch {
             toast.error("Something went wrong. Please try again.");
         }
     };
