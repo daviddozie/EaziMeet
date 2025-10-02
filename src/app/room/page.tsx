@@ -27,7 +27,7 @@ const participants = [
     },
 ];
 
-const MeetingPage: React.FC = () => {
+const MeetingPage = () => {
     const router = useRouter();
     return (
         <div className="flex h-screen w-full bg-background-light dark:bg-background-dark text-gray-800 dark:text-gray-200 font-display">

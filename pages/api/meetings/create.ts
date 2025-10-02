@@ -17,8 +17,8 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   }
 
   await setDoc(meetingRef, {
-    title: title ?? "",          // fallback empty string
-    date: date ?? null,          // fallback null
+    title: title ?? "",
+    date: date ?? null,
     time: time ?? null,
     enableChat: enableChat ?? false,
     recordMeeting: recordMeeting ?? false,
