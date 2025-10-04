@@ -3,15 +3,18 @@
 import React from "react";
 import { useForm } from "react-hook-form";
 import z from "zod";
+import { useEffect } from "react";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Switch } from "@/components/ui/switch";
 import { Separator } from "@/components/ui/separator";
-import { Calendar, Clock } from "lucide-react";
 import { Navbar } from "@/components/create-meet/navbar";
 import { CreateMeetingSchema } from "@/schemas";
+import { Calendar28 } from "@/components/create-meet/date-picker";
+import { useRouter } from "next/navigation";
+import { toast } from "react-hot-toast";
 
 import {
     Form,
@@ -27,28 +30,116 @@ type FormValues = z.infer<typeof CreateMeetingSchema>;
 
 const CreateMeet = () => {
 
+    const router = useRouter();
+
     const form = useForm<FormValues>({
         resolver: zodResolver(CreateMeetingSchema),
         defaultValues: {
             meetingTitle: "",
-            password: "",
+            meetingId: "",
             date: "",
-            time: "",
+            time: "10:30:00",
             enableChat: true,
             recordMeeting: false,
         },
     });
 
+    useEffect(() => {
+        if (form.formState.errors.meetingId) {
+            const suggestions = Array.from({ length: 3 }, () =>
+                "MEET-" + Math.random().toString(36).substring(2, 8).toUpperCase()
+            );
+
+            toast.custom((t) => (
+                <div className="bg-white shadow-lg rounded-lg p-4 w-64 ">
+                    <p className="font-semibold text-red-500 mb-2 font-poppins">
+                        Invalid Meeting ID
+                    </p>
+                    <p className="text-sm text-gray-600 mb-2 font-poppins">
+                        Try one of these IDs (click to copy):
+                    </p>
+                    <div className="flex flex-col gap-2 font-poppins">
+                        {suggestions.map((id) => (
+                            <button
+                                key={id}
+                                onClick={() => {
+                                    navigator.clipboard.writeText(id);
+                                    toast.success(`${id} copied to clipboard ✅`);
+                                    toast.dismiss(t.id);
+                                }}
+                                className="bg-gray-100 font-poppins hover:bg-gray-200 text-sm px-3 py-1 rounded-md text-center"
+                            >
+                                {id}
+                            </button>
+                        ))}
+                    </div>
+                </div>
+            ));
+        }
+    }, [form.formState.errors.meetingId]);
 
     const handleSubmit = async (values: FormValues) => {
-        console.log("Meeting payload:", values);
-        alert("Meeting created — check console for payload (demo)");
-    }
+        try {
+            const meetingRegex = /^MEET-[A-Z0-9]{6}$/;
+
+            if (!meetingRegex.test(values.meetingId)) {
+                const suggestions = Array.from({ length: 3 }, () =>
+                    "MEET-" + Math.random().toString(36).substring(2, 8).toUpperCase()
+                );
+
+                toast.custom((t) => (
+                    <div className="bg-white shadow-lg rounded-lg p-4 w-64 font-poppins">
+                        <p className="font-semibold text-red-500 mb-2">
+                            Invalid Meeting ID
+                        </p>
+                        <p className="text-sm text-gray-600 mb-2">
+                            Try one of these IDs:
+                        </p>
+                        <div className="flex flex-col gap-2 font-poppins">
+                            {suggestions.map((id) => (
+                                <button
+                                    key={id}
+                                    onClick={() => {
+                                        navigator.clipboard.writeText(id);
+                                        toast.success(`${id} copied to clipboard ✅`);
+                                        toast.dismiss(t.id);
+                                    }}
+                                    className="bg-gray-100 font-poppins text-xs hover:bg-gray-200 px-3 py-1 rounded-md text-center"
+                                >
+                                    {id}
+                                </button>
+                            ))}
+                        </div>
+
+                    </div>
+                ));
+                return;
+            }
+
+            const res = await fetch("/api/meetings/create", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify(values),
+            });
+
+            const data = await res.json();
+
+            if (!res.ok) {
+                toast.error(data.error || "Error creating meeting");
+                return;
+            }
+
+            toast.success("Meeting created successfully!");
+            router.push("join-meet");
+        } catch {
+            toast.error("Something went wrong. Please try again.");
+        }
+    };
 
     return (
         <>
             <Navbar />
-            <div className="min-h-screen flex font-poppins items-center justify-center bg-[#061022] p-6">
+            <div className="min-h-screen flex font-poppins items-center justify-center p-6">
                 <Card className="w-full max-w-lg rounded-2xl bg-[#0f1724] shadow-2xl border border-slate-800">
                     <CardHeader className="px-8 pt-10 text-center">
                         <CardTitle className="text-3xl font-extrabold text-white">Schedule a Meeting</CardTitle>
@@ -69,7 +160,7 @@ const CreateMeet = () => {
                                             <FormControl>
                                                 <Input
                                                     placeholder="e.g., Project Sync-up"
-                                                    className="mt-2 bg-[#0c1d36] border-none text-slate-200 rounded-lg h-12"
+                                                    className=" bg-[#0c1d36] border-none text-slate-200 rounded-lg h-12"
                                                     {...field}
                                                 />
                                             </FormControl>
@@ -79,15 +170,15 @@ const CreateMeet = () => {
                                 />
                                 <FormField
                                     control={form.control}
-                                    name="password"
+                                    name="meetingId"
                                     render={({ field }) => (
                                         <FormItem>
-                                            <FormLabel className="text-slate-300">Optional Password</FormLabel>
+                                            <FormLabel className="text-slate-300">Create Metting ID</FormLabel>
                                             <FormControl>
                                                 <Input
-                                                    type="password"
-                                                    placeholder="••••••••"
-                                                    className="mt-2 bg-[#0c1d36] border-none text-slate-200 rounded-lg h-12"
+                                                    type="text"
+                                                    placeholder="5%HA*ey"
+                                                    className=" bg-[#0c1d36] border-none text-slate-200 rounded-lg h-12"
                                                     {...field}
                                                 />
                                             </FormControl>
@@ -101,16 +192,10 @@ const CreateMeet = () => {
                                         render={({ field }) => (
                                             <FormItem>
                                                 <FormLabel className="text-slate-300">Date</FormLabel>
-                                                <div className="relative mt-2">
-                                                    <FormControl>
-                                                        <Input
-                                                            type="date"
-                                                            className="bg-[#0c1d36] border-none text-slate-200 rounded-lg h-12 pr-10"
-                                                            {...field}
-                                                        />
-                                                    </FormControl>
-                                                    <Calendar className="absolute right-3 top-3 text-slate-400" size={16} />
-                                                </div>
+                                                <FormControl>
+                                                    <Calendar28 value={field.value} onChange={field.onChange} />
+                                                </FormControl>
+                                                <FormMessage />
                                             </FormItem>
                                         )}
                                     />
@@ -120,15 +205,23 @@ const CreateMeet = () => {
                                         render={({ field }) => (
                                             <FormItem>
                                                 <FormLabel className="text-slate-300">Time</FormLabel>
-                                                <div className="relative mt-2">
+                                                <div className="relative">
                                                     <FormControl>
                                                         <Input
                                                             type="time"
-                                                            className="bg-[#0c1d36] border-none text-slate-200 rounded-lg h-12 pr-10"
+                                                            id="time-picker"
+                                                            step="1"
                                                             {...field}
+                                                            placeholder="10:30:00"
+                                                            className="bg-[#0c1d36] text-slate-200 border-none rounded-lg h-12 px-3
+                                                            appearance-none 
+                                                            [&::-webkit-calendar-picker-indicator]:opacity-100
+                                                            [&::-webkit-calendar-picker-indicator]:cursor-pointer
+                                                            [&::-webkit-calendar-picker-indicator]:invert
+                                                            [&::-webkit-calendar-picker-indicator]:mr-2"
                                                         />
+
                                                     </FormControl>
-                                                    <Clock className="absolute right-3 top-3 text-slate-400" size={16} />
                                                 </div>
                                             </FormItem>
                                         )}
@@ -170,8 +263,10 @@ const CreateMeet = () => {
                             </form>
                         </Form>
                     </CardContent>
+
                 </Card>
-            </div></>
+            </div>
+        </>
     );
 }
 

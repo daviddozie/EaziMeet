@@ -52,7 +52,7 @@ export const Navbar = () => {
                 <div className="hidden md:flex items-center space-x-4 font-poppins">
                     <motion.div whileTap={{ scale: 0.95 }}>
                         <Link
-                            href="/create"
+                            href="/create-meet"
                             className="bg-orange-500 hover:bg-orange-600 text-white px-4 py-2 rounded-md text-sm font-medium transition"
                         >
                             New Meeting
@@ -122,7 +122,7 @@ export const Navbar = () => {
 
                             <motion.div whileTap={{ scale: 0.95 }}>
                                 <Link
-                                    href="/new-meeting"
+                                    href="/create-meet"
                                     className="bg-orange-500 hover:bg-orange-600 text-white px-4 py-2 rounded-md text-sm font-medium transition font-poppins"
                                     onClick={() => setIsOpen(false)}
                                 >

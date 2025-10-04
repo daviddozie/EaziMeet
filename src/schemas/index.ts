@@ -7,7 +7,10 @@ export const CreateMeetingSchema = z.object({
     .min(2, { message: "Please enter the meeting title" })
     .max(100, { message: "Meeting title should not exceed 100 characters" }),
 
-  password: z.string().trim().optional(),
+  meetingId: z
+    .string()
+    .min(8, "Meeting ID must be at least 8 characters")
+    .regex(/^MEET-[A-Z0-9]{6}$/, "Meeting ID must be in the format MEET-XXXXXX"),
 
   date: z.string().min(1, { message: "Please select a date" }),
   time: z.string().min(1, { message: "Please select a time" }),
@@ -16,4 +19,11 @@ export const CreateMeetingSchema = z.object({
   recordMeeting: z.boolean(),
 });
 
-export type CreateMeetingSchemaType = z.infer<typeof CreateMeetingSchema>;
+
+export const JoinMeetingSchema = z.object({
+  meetingId: z
+    .string()
+    .min(6, "Meeting ID too short")
+    .max(12, "Meeting ID too long")
+    .regex(/^MEET-[A-Z0-9]{6}$/, "Meeting ID must be in the format MEET-XXXXXX"),
+});
