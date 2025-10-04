@@ -1,6 +1,6 @@
 "use client";
 
-import React from "react";
+import React, { Suspense } from "react";
 import { useForm } from "react-hook-form";
 import z from "zod";
 import { useRouter, useSearchParams } from "next/navigation";
@@ -23,12 +23,10 @@ import {
 
 type FormValues = z.infer<typeof JoinMeetingSchema>;
 
-const JoinMeet = () => {
+const JoinMeetForm = () => {
     const router = useRouter();
-
     const searchParams = useSearchParams();
     const meetingId: string = searchParams?.get("meetingId") ?? "";
-
 
     const form = useForm<FormValues>({
         resolver: zodResolver(JoinMeetingSchema),
@@ -108,6 +106,14 @@ const JoinMeet = () => {
                 </Card>
             </div>
         </>
+    );
+};
+
+const JoinMeet = () => {
+    return (
+        <Suspense fallback={<div>Loading...</div>}>
+            <JoinMeetForm />
+        </Suspense>
     );
 };
 
