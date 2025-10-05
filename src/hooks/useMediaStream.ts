@@ -35,7 +35,7 @@ export const useMediaStream = () => {
         stream.getTracks().forEach(track => track.stop());
       }
     };
-  }, []);
+  }, []); // We intentionally omit 'stream' as it would cause an infinite loop since we're cleaning it up in the effect
 
   const toggleAudio = () => {
     if (stream) {

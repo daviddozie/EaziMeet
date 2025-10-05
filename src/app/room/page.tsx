@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect, useRef, Suspense } from "react";
 import { Button } from "@/components/ui/button";
 import { useRouter, useSearchParams } from "next/navigation";
 import { Mic, VideoIcon, ShareIcon, PhoneIcon, VideoOffIcon, MicOff, MessageSquare, UserPlus, Users } from "lucide-react";
@@ -20,7 +20,7 @@ const socket = io(process.env.NEXT_PUBLIC_SOCKET_URL || 'http://localhost:3000',
     path: '/api/socket',
 });
 
-const MeetingPage = () => {
+const RoomContent = () => {
     const router = useRouter();
     const searchParams = useSearchParams();
     const roomId = searchParams?.get("roomId") || "default-room";
@@ -281,4 +281,10 @@ const MeetingPage = () => {
     );
 };
 
-export default MeetingPage;
+export default function RoomPage() {
+  return (
+    <Suspense fallback={<div className="flex h-screen w-full bg-[#0f1724] text-white font-display items-center justify-center">Loading...</div>}>
+      <RoomContent />
+    </Suspense>
+  );
+}
