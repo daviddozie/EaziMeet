@@ -3,7 +3,18 @@
 import React, { useState, useEffect, useRef, Suspense } from "react";
 import { Button } from "@/components/ui/button";
 import { useRouter, useSearchParams } from "next/navigation";
-import { Mic, VideoIcon, ShareIcon, PhoneIcon, VideoOffIcon, MicOff, MessageSquare, UserPlus, Users } from "lucide-react";
+import {
+    Mic,
+    VideoIcon,
+    ShareIcon,
+    PhoneIcon,
+    VideoOffIcon,
+    MicOff,
+    MessageSquare,
+    UserPlus,
+    Users
+} from "lucide-react";
+
 import { useMediaStream } from "@/hooks/useMediaStream";
 import { useWebRTC } from "@/hooks/useWebRTC";
 import io from 'socket.io-client';
@@ -132,37 +143,31 @@ const RoomContent = () => {
             )}
             {/* Main Meeting Area */}
             <main className="flex-1 flex flex-col p-4">
-                <div className="flex-1 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                <div className="h-full">
                     {participants.map((p) => (
                         <div
                             key={p.id}
                             className="bg-card-dark rounded-xl flex items-center justify-center relative group overflow-hidden"
                         >
-                            {p.stream ? (
-                                <div className="relative w-full h-full">
-                                    <video
-                                        ref={(el) => {
-                                            if (p.id === userId) {
-                                                videoRef.current = el;
-                                            } else if (el) {
-                                                (el as HTMLVideoElement).srcObject = p.stream as MediaStream;
-                                            }
-                                        }}
-                                        key={p.id}
-                                        autoPlay
-                                        playsInline
-                                        muted={p.id === userId}
-                                        className={`w-full h-full ${screenSharing ? 'object-contain' : 'object-cover'} rounded-xl`}
-                                    />
-                                    {!p.cam && !screenSharing && (
-                                        <div className="absolute inset-0 flex items-center justify-center bg-gray-800">
-                                            <Users size={48} className="text-gray-400" />
-                                        </div>
-                                    )}
-                                </div>
+                            {p.stream && p.cam ? (
+                                <video
+                                    ref={(el) => {
+                                        if (el && p.stream) {
+                                            el.srcObject = p.stream;
+                                        }
+                                    }}
+                                    autoPlay
+                                    playsInline
+                                    muted={p.id === userId}
+                                    className="w-full h-[400px] object-cover"
+                                />
                             ) : (
-                                <div className="w-full h-full bg-gray-800 flex items-center justify-center">
-                                    <Users size={48} className="text-gray-400" />
+                                <div className="w-full h-full bg-gray-800 flex items-center justify-center overflow-hidden">
+                                    <img
+                                        src="/user-avatar.png"
+                                        alt={`${p.name}'s avatar`}
+                                        className="w-full h-[400px] object-cover"
+                                    />
                                 </div>
                             )}
                             <div className="absolute bottom-4 left-4 bg-black/50 text-white text-sm px-2 py-1 rounded">
@@ -175,13 +180,12 @@ const RoomContent = () => {
                         </div>
                     ))}
                 </div>
-                
 
                 {/* Control Buttons */}
                 <div className="bg-[#111827] shadow-2xl rounded-xl p-4 mt-4 flex items-center justify-center gap-4">
                     <button
                         onClick={toggleMic}
-                        className={`w-12 h-12 flex justify-center items-center rounded-full transition-colors ${micOn ? "bg-orange-500 hover:bg-orange-600" : "bg-gray-700 hover:bg-gray-600"
+                        className={`w-12 h-12 cursor-pointer flex justify-center items-center rounded-full transition-colors ${micOn ? "bg-orange-500 hover:bg-orange-600" : "bg-gray-700 hover:bg-gray-600"
                             }`}
                     >
                         {micOn ? <Mic size={18} /> : <MicOff size={18} />}
@@ -189,7 +193,7 @@ const RoomContent = () => {
 
                     <button
                         onClick={toggleCam}
-                        className={`w-12 h-12 flex justify-center items-center rounded-full transition-colors ${camOn ? "bg-orange-500 hover:bg-orange-600" : "bg-gray-700 hover:bg-gray-600"
+                        className={`w-12 h-12 cursor-pointer flex justify-center items-center rounded-full transition-colors ${camOn ? "bg-orange-500 hover:bg-orange-600" : "bg-gray-700 hover:bg-gray-600"
                             }`}
                     >
                         {camOn ? <VideoIcon size={18} /> : <VideoOffIcon size={18} />}
@@ -197,7 +201,7 @@ const RoomContent = () => {
 
                     <button
                         onClick={toggleScreenShare}
-                        className={`w-12 h-12 flex justify-center items-center rounded-full transition-colors ${screenSharing ? "bg-green-600 hover:bg-green-700" : "bg-gray-700 hover:bg-gray-600"
+                        className={`w-12 h-12 flex cursor-pointer justify-center items-center rounded-full transition-colors ${screenSharing ? "bg-green-600 hover:bg-green-700" : "bg-gray-700 hover:bg-gray-600"
                             }`}
                     >
                         <ShareIcon size={18} />
@@ -205,7 +209,7 @@ const RoomContent = () => {
 
                     <button
                         onClick={handleLeave}
-                        className="w-12 h-12 flex justify-center items-center bg-red-600 hover:bg-red-700 rounded-full transition-colors"
+                        className="w-12 h-12 cursor-pointer flex justify-center items-center bg-red-600 hover:bg-red-700 rounded-full transition-colors"
                     >
                         <PhoneIcon size={18} />
                     </button>
@@ -213,15 +217,16 @@ const RoomContent = () => {
             </main>
 
             {/* Sidebar */}
-            <aside className="w-80 bg-[#04142c] flex flex-col border-l border-gray-800">
-                <div className="p-4 border-b border-gray-700">
+            <aside className="w-80 font-poppins bg-[#04142c] flex flex-col border-l border-gray-800">
+                <div className="p-4 border-b border-gray-700 text-slate-200">
                     <h2 className="text-xl font-bold">Meeting Details</h2>
                 </div>
 
-                <div className="flex-1 flex flex-col">
-                    <div className="flex border-b border-gray-700">
-                        <button className="flex-1 p-4 flex items-center justify-center gap-2 border-b-2 border-orange-500">
-                            <Users /> Participants ({participants.length})
+                <div className="flex-1 flex flex-col text-sm">
+                    <div className="flex items-start border-b text-slate-300 border-gray-700">
+                        <button className="flex p-4 items-center flex-col justify-center gap-2 border-b-2 border-orange-500">
+                           <div className="flex  gap-2"> <Users /> Participants </div>
+                            ({participants.length})
                         </button>
                         <button className="flex-1 p-4 flex items-center justify-center gap-2">
                             <MessageSquare /> Chat
@@ -229,7 +234,7 @@ const RoomContent = () => {
                     </div>
 
                     {/* Participants */}
-                    <div className="flex-1 p-4 space-y-4 overflow-y-auto">
+                    <div className="flex-1 p-4 space-y-4 text-sm overflow-y-auto">
                         {participants.map((p) => (
                             <div key={p.id} className="flex items-center justify-between">
                                 <div className="flex items-center gap-3">
@@ -247,7 +252,11 @@ const RoomContent = () => {
                                                 className="w-full h-full object-cover"
                                             />
                                         ) : (
-                                            <Users size={20} className="text-gray-400" />
+                                            <img
+                                                src="/user-avatar.png"
+                                                alt={`${p.name}'s avatar`}
+                                                className="w-full h-full object-cover"
+                                            />
                                         )}
                                     </div>
                                     <div>
@@ -258,11 +267,11 @@ const RoomContent = () => {
                                     </div>
                                 </div>
                                 <div className="flex items-center gap-2">
-                                    <span className={`transition-colors ${p.mic ? 'text-green-500' : 'text-red-500'}`}>
-                                        {p.mic ? <Mic size={16} /> : <MicOff size={16} />}
+                                    <span className={`transition-colors ${micOn ? 'text-green-500' : 'text-red-500'}`}>
+                                        {micOn ? <Mic size={16} /> : <MicOff size={16} />}
                                     </span>
-                                    <span className={`transition-colors ${p.cam ? 'text-green-500' : 'text-red-500'}`}>
-                                        {p.cam ? <VideoIcon size={16} /> : <VideoOffIcon size={16} />}
+                                    <span className={`transition-colors ${camOn ? 'text-green-500' : 'text-red-500'}`}>
+                                        {camOn ? <VideoIcon size={16} /> : <VideoOffIcon size={16} />}
                                     </span>
                                 </div>
                             </div>
@@ -282,9 +291,9 @@ const RoomContent = () => {
 };
 
 export default function RoomPage() {
-  return (
-    <Suspense fallback={<div className="flex h-screen w-full bg-[#0f1724] text-white font-display items-center justify-center">Loading...</div>}>
-      <RoomContent />
-    </Suspense>
-  );
+    return (
+        <Suspense fallback={<div className="flex h-screen w-full bg-[#0f1724] text-white font-display items-center justify-center">Loading...</div>}>
+            <RoomContent />
+        </Suspense>
+    );
 }
