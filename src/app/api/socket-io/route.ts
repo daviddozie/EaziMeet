@@ -39,19 +39,19 @@ export async function GET(_req: NextRequest) {
                 });
 
                 // WebRTC signaling
-                socket.on('offer', (offer: RTCSessionDescriptionInit, targetUserId: string) => {
+                socket.on('offer', (offer: RTCSessionDescriptionInit, roomId: string, targetUserId: string) => {
                     console.log(`Relaying offer from ${userId} to ${targetUserId}`);
-                    socket.to(roomId).emit('offer', offer, userId);
+                    socket.to(targetUserId).emit('offer', offer, userId);
                 });
 
-                socket.on('answer', (answer: RTCSessionDescriptionInit, targetUserId: string) => {
+                socket.on('answer', (answer: RTCSessionDescriptionInit, roomId: string, targetUserId: string) => {
                     console.log(`Relaying answer from ${userId} to ${targetUserId}`);
-                    socket.to(roomId).emit('answer', answer, userId);
+                    socket.to(targetUserId).emit('answer', answer, userId);
                 });
 
-                socket.on('ice-candidate', (candidate: RTCIceCandidateInit, targetUserId: string) => {
+                socket.on('ice-candidate', (candidate: RTCIceCandidateInit, roomId: string, targetUserId: string) => {
                     console.log(`Relaying ICE candidate from ${userId} to ${targetUserId}`);
-                    socket.to(roomId).emit('ice-candidate', candidate, userId);
+                    socket.to(targetUserId).emit('ice-candidate', candidate, userId);
                 });
             });
         });
