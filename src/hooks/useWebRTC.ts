@@ -11,6 +11,14 @@ interface UseWebRTCProps {
 const ICE_SERVERS = [
   { urls: 'stun:stun.l.google.com:19302' },
   { urls: 'stun:stun1.l.google.com:19302' },
+  { urls: 'stun:stun2.l.google.com:19302' },
+  { urls: 'stun:stun3.l.google.com:19302' },
+  { urls: 'stun:stun4.l.google.com:19302' },
+  {
+    urls: 'turn:openrelay.metered.ca:80',
+    username: 'openrelayproject',
+    credential: 'openrelayproject'
+  }
 ];
 
 export const useWebRTC = ({ socket, roomId, userId, stream }: UseWebRTCProps) => {
@@ -30,6 +38,16 @@ export const useWebRTC = ({ socket, roomId, userId, stream }: UseWebRTCProps) =>
           peerConnection.addTrack(track, stream);
         });
       }
+
+      // Monitor connection state
+      peerConnection.onconnectionstatechange = () => {
+        console.log(`Connection state with ${targetUserId}:`, peerConnection.connectionState);
+        if (peerConnection.connectionState === 'failed') {
+          console.log('Connection failed, attempting to reconnect...');
+          // Attempt to recreate the connection
+          peerConnection.restartIce();
+        }
+      };
 
       // Handle ICE candidates
       peerConnection.onicecandidate = (event) => {
