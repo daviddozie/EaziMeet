@@ -19,8 +19,8 @@ export const initializeWebRTC = (socket: Socket, roomId: string) => {
 
   return new Promise((resolve, reject) => {
     try {
-      socket.emit('join-room', roomId, (response: any) => {
-        if (response.error) {
+      socket.emit('join-room', roomId, (response: { users: string[] } | { error: string }) => {
+        if ('error' in response) {
           reject(response.error);
         } else {
           resolve(configuration);

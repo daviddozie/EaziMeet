@@ -12,7 +12,7 @@ interface CustomGlobal {
 
 declare const global: CustomGlobal;
 
-export async function GET(req: NextRequest) {
+export async function GET(_req: NextRequest) {
     if (!global._io) {
         const httpServer: NetServer = new NetServer();
         io = new SocketIOServer(httpServer, {

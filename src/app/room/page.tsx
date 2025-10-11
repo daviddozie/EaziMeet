@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState, useEffect, useRef, Suspense } from "react";
+import Image from "next/image";
 import { Button } from "@/components/ui/button";
 import { useRouter, useSearchParams } from "next/navigation";
 import {
@@ -252,10 +253,11 @@ const RoomContent = () => {
                                                 className="w-full h-full object-cover"
                                             />
                                         ) : (
-                                            <img
+                                            <Image
                                                 src="/user-avatar.png"
                                                 alt={`${p.name}'s avatar`}
-                                                className="w-full h-full object-cover"
+                                                fill
+                                                className="object-cover"
                                             />
                                         )}
                                     </div>
