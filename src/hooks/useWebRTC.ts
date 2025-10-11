@@ -8,115 +8,134 @@ interface UseWebRTCProps {
   stream?: MediaStream;
 }
 
+const ICE_SERVERS = [
+  { urls: 'stun:stun.l.google.com:19302' },
+  { urls: 'stun:stun1.l.google.com:19302' },
+];
+
 export const useWebRTC = ({ socket, roomId, userId, stream }: UseWebRTCProps) => {
   const [peers, setPeers] = useState<Record<string, RTCPeerConnection>>({});
   const [remoteStreams, setRemoteStreams] = useState<Record<string, MediaStream>>({});
   
   const peerConnections = useRef<Record<string, RTCPeerConnection>>({});
 
+  // Function to create a new peer connection
+  const createPeerConnection = (targetUserId: string) => {
+    try {
+      const peerConnection = new RTCPeerConnection({ iceServers: ICE_SERVERS });
+      
+      // Add local stream tracks to the connection
+      if (stream) {
+        stream.getTracks().forEach(track => {
+          peerConnection.addTrack(track, stream);
+        });
+      }
+
+      // Handle ICE candidates
+      peerConnection.onicecandidate = (event) => {
+        if (event.candidate) {
+          socket.emit('ice-candidate', event.candidate, roomId, targetUserId);
+        }
+      };
+
+      // Handle incoming streams
+      peerConnection.ontrack = (event) => {
+        setRemoteStreams(prev => ({
+          ...prev,
+          [targetUserId]: event.streams[0],
+        }));
+      };
+
+      peerConnections.current[targetUserId] = peerConnection;
+      setPeers(prev => ({ ...prev, [targetUserId]: peerConnection }));
+
+      return peerConnection;
+    } catch (err) {
+      console.error('Error creating peer connection:', err);
+      return null;
+    }
+  };
+
   useEffect(() => {
     if (!socket || !stream) return;
 
     const handleUserConnected = async (newUserId: string) => {
-      const peerConnection = new RTCPeerConnection({
-        iceServers: [
-          { urls: 'stun:stun.l.google.com:19302' },
-          { urls: 'stun:stun1.l.google.com:19302' },
-        ],
-      });
+      console.log('New user connected:', newUserId);
+      const peerConnection = createPeerConnection(newUserId);
+      if (!peerConnection) return;
 
-      peerConnections.current[newUserId] = peerConnection;
-      setPeers(prev => ({ ...prev, [newUserId]: peerConnection }));
-
-      // Add local tracks to the peer connection
-      stream.getTracks().forEach(track => {
-        peerConnection.addTrack(track, stream);
-      });
-
-      // Handle ICE candidates
-      peerConnection.onicecandidate = (event) => {
-        if (event.candidate) {
-          socket.emit('ice-candidate', event.candidate, roomId, newUserId);
-        }
-      };
-
-      // Handle remote streams
-      peerConnection.ontrack = (event) => {
-        setRemoteStreams(prev => ({
-          ...prev,
-          [newUserId]: event.streams[0],
-        }));
-      };
-
-      // Create and send offer
-      const offer = await peerConnection.createOffer();
-      await peerConnection.setLocalDescription(offer);
-      socket.emit('offer', offer, roomId, newUserId);
+      try {
+        // Create and send offer
+        const offer = await peerConnection.createOffer();
+        await peerConnection.setLocalDescription(offer);
+        console.log('Sending offer to:', newUserId);
+        socket.emit('offer', offer, roomId, newUserId);
+      } catch (err) {
+        console.error('Error creating offer:', err);
+      }
     };
 
     const handleOffer = async (offer: RTCSessionDescriptionInit, fromUserId: string) => {
-      const peerConnection = new RTCPeerConnection({
-        iceServers: [
-          { urls: 'stun:stun.l.google.com:19302' },
-          { urls: 'stun:stun1.l.google.com:19302' },
-        ],
-      });
+      console.log('Received offer from:', fromUserId);
+      let peerConnection = peerConnections.current[fromUserId];
+      
+      if (!peerConnection) {
+        const newPeerConnection = createPeerConnection(fromUserId);
+        if (!newPeerConnection) return;
+        peerConnection = newPeerConnection;
+      }
 
-      peerConnections.current[fromUserId] = peerConnection;
-      setPeers(prev => ({ ...prev, [fromUserId]: peerConnection }));
-
-      // Add local tracks
-      stream.getTracks().forEach(track => {
-        peerConnection.addTrack(track, stream);
-      });
-
-      // Handle ICE candidates
-      peerConnection.onicecandidate = (event) => {
-        if (event.candidate) {
-          socket.emit('ice-candidate', event.candidate, roomId, fromUserId);
-        }
-      };
-
-      // Handle remote streams
-      peerConnection.ontrack = (event) => {
-        setRemoteStreams(prev => ({
-          ...prev,
-          [fromUserId]: event.streams[0],
-        }));
-      };
-
-      // Set remote description and create answer
-      await peerConnection.setRemoteDescription(offer);
-      const answer = await peerConnection.createAnswer();
-      await peerConnection.setLocalDescription(answer);
-      socket.emit('answer', answer, roomId, fromUserId);
+      try {
+        await peerConnection.setRemoteDescription(new RTCSessionDescription(offer));
+        const answer = await peerConnection.createAnswer();
+        await peerConnection.setLocalDescription(answer);
+        console.log('Sending answer to:', fromUserId);
+        socket.emit('answer', answer, roomId, fromUserId);
+      } catch (err) {
+        console.error('Error handling offer:', err);
+      }
     };
 
     const handleAnswer = async (answer: RTCSessionDescriptionInit, fromUserId: string) => {
+      console.log('Received answer from:', fromUserId);
       const peerConnection = peerConnections.current[fromUserId];
       if (peerConnection) {
-        await peerConnection.setRemoteDescription(answer);
+        try {
+          await peerConnection.setRemoteDescription(new RTCSessionDescription(answer));
+          console.log('Successfully set remote description from answer');
+        } catch (err) {
+          console.error('Error setting remote description from answer:', err);
+        }
       }
     };
 
     const handleIceCandidate = async (candidate: RTCIceCandidateInit, fromUserId: string) => {
+      console.log('Received ICE candidate from:', fromUserId);
       const peerConnection = peerConnections.current[fromUserId];
       if (peerConnection) {
-        await peerConnection.addIceCandidate(new RTCIceCandidate(candidate));
+        try {
+          await peerConnection.addIceCandidate(new RTCIceCandidate(candidate));
+          console.log('Successfully added ICE candidate');
+        } catch (err) {
+          console.error('Error adding ICE candidate:', err);
+        }
       }
     };
 
     const handleUserDisconnected = (disconnectedUserId: string) => {
+      console.log('User disconnected:', disconnectedUserId);
       const peerConnection = peerConnections.current[disconnectedUserId];
       if (peerConnection) {
         peerConnection.close();
       }
 
+      // Clean up peer connections
       const newPeers = { ...peerConnections.current };
       delete newPeers[disconnectedUserId];
       peerConnections.current = newPeers;
       setPeers(newPeers);
 
+      // Clean up remote streams
       setRemoteStreams(prev => {
         const newStreams = { ...prev };
         delete newStreams[disconnectedUserId];
@@ -132,10 +151,12 @@ export const useWebRTC = ({ socket, roomId, userId, stream }: UseWebRTCProps) =>
     socket.on('user-disconnected', handleUserDisconnected);
 
     // Join the room
+    console.log('Joining room:', roomId, 'with userId:', userId);
     socket.emit('join-room', roomId, userId);
 
     return () => {
       // Clean up
+      console.log('Cleaning up WebRTC connections');
       socket.off('user-connected', handleUserConnected);
       socket.off('offer', handleOffer);
       socket.off('answer', handleAnswer);
@@ -143,7 +164,9 @@ export const useWebRTC = ({ socket, roomId, userId, stream }: UseWebRTCProps) =>
       socket.off('user-disconnected', handleUserDisconnected);
 
       // Close all peer connections
-      Object.values(peerConnections.current).forEach(peer => peer.close());
+      Object.values(peerConnections.current).forEach(peer => {
+        peer.close();
+      });
       peerConnections.current = {};
       setPeers({});
       setRemoteStreams({});
